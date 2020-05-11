@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>P3 - IRAC</title>
+		<script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+	</head>
+
+	<body>
+
+		<div>
+
+			<div style=" font-family: 'Montserrat', sans-serif; font-size: 30px" >
+				<a> Integración de redes, aplicaciones y contenidos,   Páctica 3 - DASH </a>
+			</div>
+
+			<div clas="code" >
+				<video class="dashjs-player" height=97% autoplay controls preload="auto"></video>
+			</div>
+
+			<div class="code"  style=" font-family: 'Montserrat', sans-serif;" >
+				<p>Video Bitrate: <span id="bitrate"></span> kbps</p>
+				<p>Video Buffer: <span id="buffer"></span> seconds</p>
+				<p>Video Representation: <span id="representation"></span></p>
+			</div>
+
+		</div>
+
+
+		<div style=" font-family: 'Montserrat', sans-serif;">
+			<a>Grupo 34, integrantes: </a>
+			<ul>
+  				<li>Silvia Kazmierzcyk</li>
+  				<li>Paloma Gómez Gómez</li>
+ 				<li>Ana Díez Medialdea</li>
+			</ul>
+		</div>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+				init();
+			});
+
+			function init(){
+				var video,
+				 player,
+				 mpd_url = "./output/stream.mpd";
+
+				video = document.querySelector("video");
+				player = dashjs.MediaPlayer().create();
+				player.initialize(video, mpd_url, true);
+				player.on(dashjs.MediaPlayer.events["PLAYBACK_ENDED"], function() {
+					clearInterval(eventPoller);
+				});
+
+				var eventPoller = setInterval(function() {
+					var streamInfo = player.getActiveStream().getStreamInfo();
+					var dashMetrics = player.getDashMetrics();
+					var dashAdapter = player.getDashAdapter();
+
+					if (dashMetrics && streamInfo) {
+						 const periodIdx = streamInfo.index;
+						 var repSwitch = dashMetrics.getCurrentRepresentationSwitch('video', true);
+						 var bufferLevel = dashMetrics.getCurrentBufferLevel('video', true);
+						 var bitrate = repSwitch ? Math.round(dashAdapter.
+						 getBandwidthForRepresentation(repSwitch.to,
+						 periodIdx) / 1000) : NaN;
+						 document.getElementById('buffer').innerText = bufferLevel + " secs";
+						 document.getElementById('bitrate').innerText = bitrate + " Kbps";
+						 document.getElementById('representation').innerText = repSwitch.to;
+					 }
+				}, 500);
+			}
+		</script>
+
+	</body>
+</html>
+
